@@ -1,13 +1,79 @@
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define TAMANHO 10
 #define NAVIO 3
+#define TAMANHO_HABILIDADE 5
+#define AGUA 0
+#define NAVE 3
+#define HABILIDADE 5
 
 void inicializarTabuleiro(int tabuleiro[TAMANHO][TAMANHO]) {
     for (int i = 0; i < TAMANHO; i++) {
         for (int j = 0; j < TAMANHO; j++) {
             tabuleiro[i][j] = 0;
+        }
+    }
+}
+
+void criarHabilidadeCone(int cone[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE]) {
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (i == 0 && j == 2) {
+                cone[i][j] = 1;
+            } else if (i == 1 && (j >= 1 && j <= 3)) {
+                cone[i][j] = 1;
+            } else if (i == 2 && (j >= 0 && j <= 4)) {
+                cone[i][j] = 1;
+            } else {
+                cone[i][j] = 0;
+            }
+        }
+    }
+}
+
+void criarHabilidadeCruz(int cruz[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE]) {
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (i == 2 || j == 2) {
+                cruz[i][j] = 1;
+            } else {
+                cruz[i][j] = 0;
+            }
+        }
+    }
+}
+
+void criarHabilidadeOctaedro(int octaedro[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE]) {
+    int centro = TAMANHO_HABILIDADE / 2;
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            int distancia = abs(i - centro) + abs(j - centro);
+            if (distancia <= centro) {
+                octaedro[i][j] = 1;
+            } else {
+                octaedro[i][j] = 0;
+            }
+        }
+    }
+}
+
+
+
+void aplicarHabilidade(int tabuleiro[TAMANHO][TAMANHO], int habilidade[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE], int origem_linha, int origem_coluna) {
+    int offset = TAMANHO_HABILIDADE / 2;
+    for (int i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (int j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (habilidade[i][j] == 1) {
+                int linha = origem_linha - offset + i;
+                int coluna = origem_coluna - offset + j;
+                if (linha >= 0 && linha < TAMANHO && coluna >= 0 && coluna < TAMANHO) {
+                    if (tabuleiro[linha][coluna] != NAVE) {
+                        tabuleiro[linha][coluna] = HABILIDADE;
+                    }
+                }
+            }
         }
     }
 }
@@ -38,9 +104,13 @@ void posicionarNavio(int tabuleiro[TAMANHO][TAMANHO], int linha, int coluna, int
 
 int main() {
     int tabuleiro[TAMANHO][TAMANHO];
+    int cone[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
+    int cruz[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
+    int octaedro[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
+    
     inicializarTabuleiro(tabuleiro);
 
-    printf("=== BATALHA NAVAL - NIVEL INTERMEDIARIO ===\n");
+    printf("=== BATALHA NAVAL - NIVEL AVANCADO ===\n");
     printf("Posicionando navios no tabuleiro...\n\n");
 
     int h_linha = 2, h_coluna = 1;
@@ -67,7 +137,21 @@ int main() {
         printf("Navio diagonal secundaria posicionado nas posicoes (1,10)-(3,8)\n");
     } else printf("Erro ao posicionar navio diagonal secundaria!\n");
 
-    printf("\n=== TABULEIRO FINAL ===\n");
+    printf("\nCriando habilidades especiais...\n");
+    criarHabilidadeCone(cone);
+    criarHabilidadeCruz(cruz);
+    criarHabilidadeOctaedro(octaedro);
+
+    printf("Aplicando habilidade Cone na posicao (4,4)...\n");
+    aplicarHabilidade(tabuleiro, cone, 3, 3);
+
+    printf("Aplicando habilidade Cruz na posicao (7,2)...\n");
+    aplicarHabilidade(tabuleiro, cruz, 6, 1);
+
+    printf("Aplicando habilidade Octaedro na posicao (9,6)...\n");
+    aplicarHabilidade(tabuleiro, octaedro, 8, 5);
+
+    printf("\n=== TABULEIRO COM HABILIDADES ===\n");
     printf("   ");
     for (int j = 0; j < TAMANHO; j++) printf("%2d ", j + 1);
     printf("\n   ");
@@ -78,6 +162,6 @@ int main() {
         for (int j = 0; j < TAMANHO; j++) printf("%2d ", tabuleiro[i][j]);
         printf("\n");
     }
-    printf("\nLegenda:\n0 = Agua\n3 = Navio\n");
+    printf("\nLegenda:\n0 = Agua\n3 = Navio\n5 = Area de Efeito da Habilidade\n");
     return 0;
 }
